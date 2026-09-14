@@ -60,7 +60,7 @@ export default function AdminUsers() {
       <div className="panel">
         <h2>رفع بيانات أعضاء هيئة التدريس (CSV)</h2>
         <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: -8, marginBottom: 14 }}>
-          أعمدة الملف المطلوبة: <code>employee_number, full_name, department_name</code>
+          أعمدة الملف المطلوبة: <code>employee_number, full_name, department_name</code> — يُنشأ لكل عضو حساب دخول تلقائيًا ببريد مؤقت يمكنه تغييره عند أول دخول
         </p>
         <input type="file" accept=".csv" onChange={handleFile} />
         {importResult && (
@@ -163,6 +163,10 @@ function AddUserModal({ departments, onClose, onSaved }) {
               <option value="">بدون قسم</option>
               {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
+          </div>
+          <div className="field">
+            <label>البريد الإلكتروني (مطلوب لحساب الدخول)</label>
+            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@qu.edu.sa" required />
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose}>إلغاء</button>

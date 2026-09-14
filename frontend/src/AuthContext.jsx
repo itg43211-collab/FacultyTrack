@@ -166,7 +166,17 @@ export function AuthProvider({ children }) {
 
         if (authError) {
           console.error("❌ Supabase Auth Error:", authError);
-          throw new Error(authError.message);
+          const msg = String(authError.message || "");
+          if (msg.includes("Invalid login credentials")) {
+            throw new Error("كلمة المرور خاطئة");
+          }
+          if (msg.includes("Email not confirmed")) {
+            throw new Error("البريد الإلكتروني غير مؤكد — راجع إدارة النظام");
+          }
+          if (msg.includes("rate limit") || msg.includes("Too many requests")) {
+            throw new Error("محاولات كثيرة، انتظر قليلًا ثم حاول مجددًا");
+          }
+          throw new Error(msg || "تعذر تسجيل الدخول");
         }
 
         if (!data?.session || !data?.user) {

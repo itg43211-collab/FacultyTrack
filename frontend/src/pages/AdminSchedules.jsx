@@ -31,35 +31,41 @@ export default function AdminSchedules() {
       </div>
 
       <div className="panel">
-        <h2>رفع جدول المحاضرات (CSV أو PDF)</h2>
+        <h2>رفع جدول المحاضرات (CSV)</h2>
         <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: -8, marginBottom: 10 }}>
-          <strong>ملف CSV</strong> — الأعمدة المطلوبة:{" "}
-          <code>employee_number, course_name, course_code, day, start_time, end_time, section</code>
+          <strong>الأعمدة الأساسية (مطلوبة):</strong>{" "}
+          <code>employee_number, course_name, day, start_time, end_time</code>{" "}
+          — أو بأسمائها العربية:{" "}
+          <code>الرقم الوظيفي، اسم المقرر، اليوم، وقت البداية، وقت النهاية</code>
+        </p>
+        <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: 0, marginBottom: 10 }}>
+          <strong>أعمدة اختيارية:</strong> <code>course_code / رمز المقرر</code>،{" "}
+          <code>section / الشعبة</code>. وأيضًا <code>full_name / الاسم</code> و{" "}
+          <code>department_name / القسم</code> — إن وُجد رقم وظيفي غير مسجَّل في النظام
+          وتوفّر عمود الاسم في نفس السطر، يُنشأ للعضو حساب تلقائيًا (بريد مؤقت وكلمة
+          مرور يعدّها بنفسه عند أول دخول) قبل إضافة محاضرته، فلا حاجة لرفع ملف أعضاء
+          منفصل قبل ملف الجدول. الأقسام غير الموجودة تُنشأ تلقائيًا بالاسم الوارد
+          في الملف.
         </p>
         <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: 0, marginBottom: 14 }}>
-          <strong>ملف PDF</strong> — يجب أن تكون كل محاضرة في سطر مستقل، والحقول مفصولة بالرمز{" "}
-          <code>|</code> بهذا الترتيب بالضبط:
-          <br />
-          <code>الرقم_الوظيفي|اسم_المقرر|رمز_المقرر|اليوم|وقت_البداية|وقت_النهاية|الشعبة</code>
-          <br />
-          مثال سطر داخل الملف: <code>1001|قواعد البيانات|CS101|الأحد|08:00|09:00|1</code>
-          <br />
-          إذا لم يتوفر رمز المقرر أو الشعبة، اترك المكان فارغًا بين الرمزين (<code>||</code>).
-          <br />
-          <span style={{ color: "#c0392b" }}>
-            ملاحظة: استخراج البيانات من PDF أقل موثوقية من CSV لأن الملف نص وليس جدول بيانات حقيقي —
-            التزم بتنسيق الأسطر أعلاه لضمان دقة الاستيراد.
-          </span>
-        </p>
-        <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: 0, marginBottom: 14 }}>
-          قيمة "اليوم" تُقبل كاسم عربي (الأحد، الاثنين...) أو كرقم من 0 إلى 6 (0 = الأحد).
+          قيمة "اليوم" تُقبل كاسم عربي (الأحد، الاثنين/الإثنين بأي رسم للهمزة...)
+          أو كرقم من 0 إلى 6 (0 = الأحد). وقت البداية/النهاية بصيغة{" "}
+          <code>HH:MM</code> على مدار 24 ساعة (صفر بادئ اختياري، مثل <code>8:00</code>{" "}
+          أو <code>08:00</code>).
           <br />
           يجب أن يكون هناك فصل دراسي مفعّل قبل رفع الجدول.
+          <br />
+          إعادة رفع نفس الملف لاحقًا آمنة: أي محاضرة موجودة مسبقًا بنفس البيانات
+          تمامًا تُتجاهل بدل تكرارها، والأعضاء الموجودون يبقون كما هم.
         </p>
-        <input type="file" accept=".csv,.pdf" onChange={handleFile} />
+        <input type="file" accept=".csv" onChange={handleFile} />
         {result && (
           <div style={{ marginTop: 14 }}>
-            <div className="info-box">تم استيراد {result.imported} محاضرة</div>
+            <div className="info-box">
+              تم استيراد {result.imported} محاضرة
+              {result.created_members > 0 && ` — تم إنشاء ${result.created_members} عضو جديد`}
+              {result.skipped_duplicate > 0 && ` — تم تجاهل ${result.skipped_duplicate} محاضرة مكررة`}
+            </div>
             {result.errors?.length > 0 && (
               <div className="error-box">
                 <div style={{ marginBottom: 6, fontWeight: 600 }}>ملاحظات ({result.errors.length}):</div>

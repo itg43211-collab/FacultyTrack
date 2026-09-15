@@ -31,8 +31,6 @@ export default function Login() {
   const navigate = useNavigate();
 
   // =========================================================
-  // الخطوة 1: التحقق من الرقم الوظيفي من جدول profiles
-  // =========================================================
   async function handleCheckEmployee(e) {
     e.preventDefault();
     setError("");

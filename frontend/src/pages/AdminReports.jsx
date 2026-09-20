@@ -5,6 +5,15 @@ import { useToast } from "../ToastContext";
 
 const STATUS_LABEL = { present: "حاضر", excused: "غائب بعذر", absent: "غائب بدون عذر" };
 
+async function viewAttachment(excuseId, scope, showToast) {
+  try {
+    const res = await api.get(`/${scope}/excuses/${excuseId}/attachment-url`);
+    window.open(res.url, "_blank", "noopener,noreferrer");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
 export default function AdminReports() {
   const [departments, setDepartments] = useState([]);
   const [members, setMembers] = useState([]);
@@ -98,7 +107,7 @@ export default function AdminReports() {
           ) : (
             <table className="data-table">
               <thead>
-                <tr><th>الاسم</th><th>الرقم الوظيفي</th><th>القسم</th><th>المقرر</th><th>التاريخ</th><th>وقت المحاضرة</th><th>وقت التحضير</th><th>الحالة</th><th>نوع العذر</th></tr>
+                <tr><th>الاسم</th><th>الرقم الوظيفي</th><th>القسم</th><th>المقرر</th><th>التاريخ</th><th>وقت المحاضرة</th><th>وقت التحضير</th><th>الحالة</th><th>نوع العذر</th><th>المرفق</th></tr>
               </thead>
               <tbody>
                 {rows.map((r, i) => (
@@ -112,6 +121,13 @@ export default function AdminReports() {
                     <td className="num">{r.check_in_time || "-"}</td>
                     <td><span className={`badge ${r.status}`}>{STATUS_LABEL[r.status]}</span></td>
                     <td>{r.excuse_type || "-"}</td>
+                    <td>
+                      {r.has_attachment ? (
+                        <button className="btn btn-outline btn-sm" onClick={() => viewAttachment(r.excuse_id, "admin", showToast)}>
+                          عرض المرفق
+                        </button>
+                      ) : "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

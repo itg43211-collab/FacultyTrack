@@ -3,7 +3,7 @@ import Layout from "../components/Layout";
 import { api } from "../api";
 import { useToast } from "../ToastContext";
 
-export default function AdminSchedules() {
+export default function MonitorSchedules() {
   const [result, setResult] = useState(null);
   const showToast = useToast();
 
@@ -13,7 +13,7 @@ export default function AdminSchedules() {
     const fd = new FormData();
     fd.append("file", file);
     try {
-      const res = await api.postForm("/admin/schedules/import", fd);
+      const res = await api.postForm("/monitor/schedules/import", fd);
       setResult(res);
       showToast(res.message);
     } catch (err) {
@@ -26,8 +26,8 @@ export default function AdminSchedules() {
   return (
     <Layout>
       <div className="page-header">
-        <h1>الجداول والمقررات</h1>
-        <p>رفع جدول المحاضرات دفعة واحدة وربطه تلقائيًا بأعضاء هيئة التدريس عبر الرقم الوظيفي</p>
+        <h1>جدول محاضرات القسم</h1>
+        <p>رفع جدول محاضرات أعضاء قسمك فقط، دفعة واحدة، وربطه تلقائيًا بالرقم الوظيفي</p>
       </div>
 
       <div className="panel">
@@ -40,12 +40,10 @@ export default function AdminSchedules() {
         </p>
         <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: 0, marginBottom: 10 }}>
           <strong>أعمدة اختيارية:</strong> <code>course_code / رمز المقرر</code>،{" "}
-          <code>section / الشعبة</code>. وأيضًا <code>full_name / الاسم</code> و{" "}
-          <code>department_name / القسم</code> — إن وُجد رقم وظيفي غير مسجَّل في النظام
-          وتوفّر عمود الاسم في نفس السطر، يُنشأ للعضو حساب تلقائيًا (بريد مؤقت وكلمة
-          مرور يعدّها بنفسه عند أول دخول) قبل إضافة محاضرته، فلا حاجة لرفع ملف أعضاء
-          منفصل قبل ملف الجدول. الأقسام غير الموجودة تُنشأ تلقائيًا بالاسم الوارد
-          في الملف.
+          <code>section / الشعبة</code>، و<code>full_name / الاسم</code> — إن وُجد رقم
+          وظيفي غير مسجَّل بعد وتوفّر عمود الاسم في نفس السطر، يُنشأ للعضو حساب تلقائيًا
+          (بريد مؤقت وكلمة مرور يعدّها بنفسه عند أول دخول) **داخل قسمك أنت فقط**، فلا
+          حاجة لعمود القسم أصلًا.
         </p>
         <p style={{ fontSize: 13, color: "var(--ink-dim)", marginTop: 0, marginBottom: 14 }}>
           قيمة "اليوم" تُقبل كاسم عربي (الأحد، الاثنين/الإثنين بأي رسم للهمزة...)
@@ -53,10 +51,11 @@ export default function AdminSchedules() {
           <code>HH:MM</code> على مدار 24 ساعة (صفر بادئ اختياري، مثل <code>8:00</code>{" "}
           أو <code>08:00</code>).
           <br />
-          يجب أن يكون هناك فصل دراسي مفعّل قبل رفع الجدول.
+          إذا كان الرقم الوظيفي مسجّلًا مسبقًا في قسم آخر، سيتم تجاهل ذلك السطر — التعديل
+          هذا مقيّد بأعضاء قسمك فقط.
           <br />
           إعادة رفع نفس الملف لاحقًا آمنة: أي محاضرة موجودة مسبقًا بنفس البيانات
-          تمامًا تُتجاهل بدل تكرارها، والأعضاء الموجودون يبقون كما هم.
+          تمامًا تُتجاهل بدل تكرارها.
         </p>
         <input type="file" accept=".csv" onChange={handleFile} />
         {result && (

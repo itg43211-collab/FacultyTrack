@@ -45,6 +45,17 @@ export default function AdminSemesters() {
     load();
   }
 
+  async function remove(id) {
+    if (!window.confirm("حذف الفصل الدراسي نهائي وسيحذف معه كل الجداول وسجلات الحضور والأعذار المرتبطة به. متأكد؟")) return;
+    try {
+      await api.delete(`/admin/semesters/${id}`);
+      showToast("تم حذف الفصل الدراسي نهائيًا");
+      load();
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  }
+
   return (
     <Layout>
       <div className="page-header">
@@ -94,6 +105,15 @@ export default function AdminSemesters() {
                     ) : (
                       <button className="btn btn-primary btn-sm" onClick={() => activate(s.id)}>تفعيل</button>
                     )}
+                    {" "}
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      title="حذف نهائي"
+                      onClick={() => remove(s.id)}
+                      style={{ color: "#c0392b" }}
+                    >
+                      🗑 حذف
+                    </button>
                   </td>
                 </tr>
               ))}

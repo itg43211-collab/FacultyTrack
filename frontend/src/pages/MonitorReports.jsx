@@ -5,6 +5,15 @@ import { useToast } from "../ToastContext";
 
 const STATUS_LABEL = { present: "حاضر", excused: "غائب بعذر", absent: "غائب بدون عذر" };
 
+async function viewAttachment(excuseId, showToast) {
+  try {
+    const res = await api.get(`/monitor/excuses/${excuseId}/attachment-url`);
+    window.open(res.url, "_blank", "noopener,noreferrer");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
 export default function MonitorReports() {
   const [filters, setFilters] = useState({ from: "", to: "", status: "" });
   const [rows, setRows] = useState(null);
@@ -72,7 +81,7 @@ export default function MonitorReports() {
             <div className="empty-state">لا توجد نتائج مطابقة</div>
           ) : (
             <table className="data-table">
-              <thead><tr><th>الاسم</th><th>الرقم الوظيفي</th><th>المقرر</th><th>التاريخ</th><th>وقت المحاضرة</th><th>وقت التحضير</th><th>الحالة</th></tr></thead>
+              <thead><tr><th>الاسم</th><th>الرقم الوظيفي</th><th>المقرر</th><th>التاريخ</th><th>وقت المحاضرة</th><th>وقت التحضير</th><th>الحالة</th><th>المرفق</th></tr></thead>
               <tbody>
                 {rows.map((r, i) => (
                   <tr key={i}>
@@ -83,6 +92,13 @@ export default function MonitorReports() {
                     <td className="num">{r.start_time} - {r.end_time}</td>
                     <td className="num">{r.check_in_time || "-"}</td>
                     <td><span className={`badge ${r.status}`}>{STATUS_LABEL[r.status]}</span></td>
+                    <td>
+                      {r.has_attachment ? (
+                        <button className="btn btn-outline btn-sm" onClick={() => viewAttachment(r.excuse_id, showToast)}>
+                          عرض المرفق
+                        </button>
+                      ) : "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

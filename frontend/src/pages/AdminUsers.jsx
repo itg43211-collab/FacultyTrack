@@ -10,6 +10,8 @@ export default function AdminUsers() {
   const [departments, setDepartments] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [search, setSearch] = useState("");
+  const [deptFilter, setDeptFilter] = useState("");
   const showToast = useToast();
 
   async function load() {
@@ -77,19 +79,43 @@ export default function AdminUsers() {
       </div>
 
       <div className="panel">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ margin: 0 }}>كل المستخدمين</h2>
           <button className="btn btn-primary btn-sm" onClick={() => setShowAdd(true)}>إضافة مستخدم</button>
         </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+          <div className="field" style={{ minWidth: 220, marginBottom: 0 }}>
+            <label>بحث (بالاسم أو الرقم الوظيفي)</label>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="اكتب اسمًا أو رقمًا وظيفيًا..." />
+          </div>
+          <div className="field" style={{ minWidth: 180, marginBottom: 0 }}>
+            <label>تصفية حسب القسم</label>
+            <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+              <option value="">كل الأقسام</option>
+              {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+        </div>
         {!users ? (
           <div className="empty-state">جارٍ التحميل...</div>
-        ) : (
+        ) : (() => {
+          const q = search.trim().toLowerCase();
+          const filtered = users.filter((u) => {
+            const matchesSearch = !q
+              || u.full_name?.toLowerCase().includes(q)
+              || String(u.employee_number ?? "").toLowerCase().includes(q);
+            const matchesDept = !deptFilter || String(u.department_id) === String(deptFilter);
+            return matchesSearch && matchesDept;
+          });
+          return filtered.length === 0 ? (
+            <div className="empty-state">لا توجد نتائج مطابقة</div>
+          ) : (
           <table className="data-table">
             <thead>
               <tr><th>الاسم</th><th>الرقم الوظيفي</th><th>الدور</th><th>القسم</th><th>الحالة</th><th></th></tr>
             </thead>
             <tbody>
-              {users.map((u) => (
+              {filtered.map((u) => (
                 <tr key={u.id}>
                   <td>{u.full_name}</td>
                   <td className="num">{u.employee_number}</td>
@@ -106,7 +132,8 @@ export default function AdminUsers() {
               ))}
             </tbody>
           </table>
-        )}
+          );
+        })()}
       </div>
 
       {showAdd && (

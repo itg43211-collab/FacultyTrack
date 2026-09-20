@@ -8,12 +8,12 @@ import FacultyDashboard from "./pages/FacultyDashboard";
 import FacultyHistory from "./pages/FacultyHistory";
 import AdminOverview from "./pages/AdminOverview";
 import AdminUsers from "./pages/AdminUsers";
-import AdminSchedules from "./pages/AdminSchedules";
 import AdminSemesters from "./pages/AdminSemesters";
 import AdminLocation from "./pages/AdminLocation";
 import AdminReports from "./pages/AdminReports";
 import MonitorDashboard from "./pages/MonitorDashboard";
 import MonitorMembers from "./pages/MonitorMembers";
+import MonitorSchedules from "./pages/MonitorSchedules";
 import MonitorReports from "./pages/MonitorReports";
 
 const ROLE_HOME = { admin: "/admin", faculty: "/faculty", monitor: "/monitor" };
@@ -41,13 +41,13 @@ function AppRoutes() {
 
       <Route path="/admin" element={<RequireRole role="admin"><AdminOverview /></RequireRole>} />
       <Route path="/admin/users" element={<RequireRole role="admin"><AdminUsers /></RequireRole>} />
-      <Route path="/admin/schedules" element={<RequireRole role="admin"><AdminSchedules /></RequireRole>} />
       <Route path="/admin/semesters" element={<RequireRole role="admin"><AdminSemesters /></RequireRole>} />
       <Route path="/admin/location" element={<RequireRole role="admin"><AdminLocation /></RequireRole>} />
       <Route path="/admin/reports" element={<RequireRole role="admin"><AdminReports /></RequireRole>} />
 
       <Route path="/monitor" element={<RequireRole role="monitor"><MonitorDashboard /></RequireRole>} />
       <Route path="/monitor/members" element={<RequireRole role="monitor"><MonitorMembers /></RequireRole>} />
+      <Route path="/monitor/schedules" element={<RequireRole role="monitor"><MonitorSchedules /></RequireRole>} />
       <Route path="/monitor/reports" element={<RequireRole role="monitor"><MonitorReports /></RequireRole>} />
 
       <Route path="/" element={<RootRedirect />} />

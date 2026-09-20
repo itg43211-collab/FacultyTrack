@@ -27,10 +27,6 @@ const NAV = {
       label: "المستخدمون وأعضاء التدريس",
     },
     {
-      to: "/admin/schedules",
-      label: "الجداول والمقررات",
-    },
-    {
       to: "/admin/semesters",
       label: "الفصول الدراسية",
     },
@@ -53,6 +49,10 @@ const NAV = {
     {
       to: "/monitor/members",
       label: "أعضاء القسم",
+    },
+    {
+      to: "/monitor/schedules",
+      label: "جدول محاضرات القسم",
     },
     {
       to: "/monitor/reports",
@@ -145,4 +145,3 @@ export default function Layout({ children }) {
     </div>
   );
 }
-

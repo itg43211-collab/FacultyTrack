@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Layout from "../components/Layout";
 import { api } from "../api";
+import { supabase } from "../lib/supabase";
 import { useToast } from "../ToastContext";
 
 const STATUS_LABEL = { present: "حاضر", excused: "غائب بعذر", absent: "غائب بدون عذر", pending: "بانتظار الوقت" };
@@ -141,6 +142,7 @@ function ExcuseModal({ scheduleId, onClose, onSaved }) {
   const [type, setType] = useState("health");
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -149,7 +151,18 @@ function ExcuseModal({ scheduleId, onClose, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      await api.post("/faculty/excuses", { schedule_id: scheduleId, date, type, notes });
+      let attachment_path = null;
+      if (file) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const safeName = file.name.replace(/[^\w.\-]/g, "_");
+        const path = `${user.id}/${Date.now()}-${safeName}`;
+        const { error: uploadErr } = await supabase.storage
+          .from("excuse-attachments")
+          .upload(path, file, { upsert: false });
+        if (uploadErr) throw new Error("تعذر رفع المرفق: " + uploadErr.message);
+        attachment_path = path;
+      }
+      await api.post("/faculty/excuses", { schedule_id: scheduleId, date, type, notes, attachment_path });
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -179,6 +192,13 @@ function ExcuseModal({ scheduleId, onClose, onSaved }) {
           <div className="field">
             <label>ملاحظات</label>
             <textarea rows="3" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ width: "100%", padding: 10, border: "1px solid var(--line)", borderRadius: 4 }} />
+          </div>
+          <div className="field">
+            <label>مرفق (اختياري) — مثل تقرير طبي أو ما يثبت العذر</label>
+            <input type="file" accept="image/*,application/pdf" onChange={(e) => setFile(e.target.files[0] || null)} />
+            <p style={{ fontSize: 12, color: "var(--ink-dim)", marginTop: 4 }}>
+              المرفق يظهر للمدير ومراقب القسم فقط.
+            </p>
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             <button type="button" className="btn btn-ghost" onClick={onClose}>إلغاء</button>

@@ -28,7 +28,7 @@ async function getSessionToken() {
 
 // تحويل ملف CSV المرفوع إلى JSON (اسم الملف + محتوى base64)
 // لأن Edge Functions لا تستقبل multipart/form-data هنا.
-const IMPORT_PATHS = ["/admin/faculty/import", "/admin/schedules/import"];
+const IMPORT_PATHS = ["/admin/faculty/import", "/admin/schedules/import", "/monitor/schedules/import"];
 
 async function formDataToPayload(fd) {
   const file = fd.get("file");
@@ -81,6 +81,7 @@ export const api = {
   get: (path) => request(path),
   post: (path, body) => request(path, { method: "POST", body }),
   put: (path, body) => request(path, { method: "PUT", body }),
+  delete: (path) => request(path, { method: "DELETE" }),
   postForm: (path, formData) =>
     request(path, { method: "POST", body: formData, isForm: true }),
   // التوكن يُدار الآن بالكامل عبر Supabase Auth — لا حاجة لهذه الدوال

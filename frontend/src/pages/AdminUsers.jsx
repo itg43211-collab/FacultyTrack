@@ -12,6 +12,8 @@ export default function AdminUsers() {
   const [importResult, setImportResult] = useState(null);
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
+  const [lastFacultyUpload, setLastFacultyUpload] = useState(null);
+  const [deptUploads, setDeptUploads] = useState([]);
   const showToast = useToast();
 
   async function load() {
@@ -20,7 +22,16 @@ export default function AdminUsers() {
     setDepartments(d.departments);
   }
 
-  useEffect(() => { load(); }, []);
+  async function loadUploads() {
+    const [own, all] = await Promise.all([
+      api.get("/admin/faculty/last-upload").catch(() => ({ upload: null })),
+      api.get("/admin/schedules/last-uploads").catch(() => ({ uploads: [] })),
+    ]);
+    setLastFacultyUpload(own.upload);
+    setDeptUploads(all.uploads || []);
+  }
+
+  useEffect(() => { load(); loadUploads(); }, []);
 
   async function handleFile(e) {
     const file = e.target.files[0];
@@ -32,6 +43,7 @@ export default function AdminUsers() {
       setImportResult(res);
       showToast(res.message);
       await load();
+      await loadUploads();
     } catch (err) {
       showToast(err.message, "error");
     } finally {
@@ -65,6 +77,7 @@ export default function AdminUsers() {
           أعمدة الملف المطلوبة: <code>employee_number, full_name, department_name</code> — يُنشأ لكل عضو حساب دخول تلقائيًا ببريد مؤقت يمكنه تغييره عند أول دخول
         </p>
         <input type="file" accept=".csv" onChange={handleFile} />
+        <LastUploadInfo upload={lastFacultyUpload} />
         {importResult && (
           <div style={{ marginTop: 14 }}>
             <div className="info-box">تم استيراد {importResult.imported} عضو</div>
@@ -75,6 +88,31 @@ export default function AdminUsers() {
               </div>
             )}
           </div>
+        )}
+      </div>
+
+      <div className="panel">
+        <h2>آخر جداول رفعها المراقبون (حسب القسم)</h2>
+        {deptUploads.length === 0 ? (
+          <div className="empty-state">ما رفع أي مراقب جدولًا لقسمه بعد</div>
+        ) : (
+          <table className="data-table">
+            <thead><tr><th>القسم</th><th>اسم الملف</th><th>تاريخ الرفع</th><th></th></tr></thead>
+            <tbody>
+              {deptUploads.map((d) => (
+                <tr key={d.department_id}>
+                  <td>{d.department_name}</td>
+                  <td>{d.upload?.filename}</td>
+                  <td className="num">{d.upload?.uploaded_at ? new Date(d.upload.uploaded_at).toLocaleString("ar-SA") : "-"}</td>
+                  <td>
+                    {d.upload?.url && (
+                      <a href={d.upload.url} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">تنزيل</a>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
@@ -140,6 +178,24 @@ export default function AdminUsers() {
         <AddUserModal departments={departments} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load(); showToast("تمت إضافة المستخدم"); }} />
       )}
     </Layout>
+  );
+}
+
+function LastUploadInfo({ upload }) {
+  if (!upload) return null;
+  return (
+    <div style={{ marginTop: 14, fontSize: 13 }}>
+      <span style={{ color: "var(--ink-dim)" }}>آخر نسخة مرفوعة: </span>
+      <strong>{upload.filename}</strong>
+      {upload.uploaded_at && (
+        <span style={{ color: "var(--ink-dim)" }}> — {new Date(upload.uploaded_at).toLocaleString("ar-SA")}</span>
+      )}
+      {upload.url && (
+        <a href={upload.url} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ marginInlineStart: 8 }}>
+          تنزيل
+        </a>
+      )}
+    </div>
   );
 }
 

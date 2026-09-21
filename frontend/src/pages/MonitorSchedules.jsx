@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Layout from "../components/Layout";
 import { api } from "../api";
 import { useToast } from "../ToastContext";
 
 export default function MonitorSchedules() {
   const [result, setResult] = useState(null);
+  const [lastUpload, setLastUpload] = useState(null);
   const showToast = useToast();
+
+  const loadLastUpload = useCallback(async () => {
+    try {
+      const res = await api.get("/monitor/schedules/last-upload");
+      setLastUpload(res.upload);
+    } catch {
+      // تجاهل — مجرد معلومة إضافية، لا تمنع استخدام الصفحة
+    }
+  }, []);
+
+  useEffect(() => { loadLastUpload(); }, [loadLastUpload]);
 
   async function handleFile(e) {
     const file = e.target.files[0];
@@ -16,6 +28,7 @@ export default function MonitorSchedules() {
       const res = await api.postForm("/monitor/schedules/import", fd);
       setResult(res);
       showToast(res.message);
+      await loadLastUpload();
     } catch (err) {
       showToast(err.message, "error");
     } finally {
@@ -58,6 +71,25 @@ export default function MonitorSchedules() {
           تمامًا تُتجاهل بدل تكرارها.
         </p>
         <input type="file" accept=".csv" onChange={handleFile} />
+
+        {lastUpload && (
+          <div style={{ marginTop: 14, fontSize: 13 }}>
+            <span style={{ color: "var(--ink-dim)" }}>آخر نسخة مرفوعة: </span>
+            <strong>{lastUpload.filename}</strong>
+            {lastUpload.uploaded_at && (
+              <span style={{ color: "var(--ink-dim)" }}> — {new Date(lastUpload.uploaded_at).toLocaleString("ar-SA")}</span>
+            )}
+            {lastUpload.url && (
+              <>
+                {" "}
+                <a href={lastUpload.url} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ marginInlineStart: 8 }}>
+                  تنزيل
+                </a>
+              </>
+            )}
+          </div>
+        )}
+
         {result && (
           <div style={{ marginTop: 14 }}>
             <div className="info-box">
